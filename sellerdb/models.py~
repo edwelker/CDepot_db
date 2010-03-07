@@ -78,6 +78,8 @@ class Seller(models.Model):
     
     first_created = models.DateField(auto_now_add=True)
     
+    dates_visited = models.ManyToManyField("DatesVisited", related_name="DatesVisited")
+    
     class Meta: 
         ordering = ['last_name']
     
@@ -87,7 +89,6 @@ class Seller(models.Model):
 
 class DatesVisited(models.Model):
     date_visited = models.DateField(auto_now_add=True, unique=True)
-    sellers = models.ManyToManyField(Seller, through='DateList')
     
     class Meta: 
         verbose_name = "Date(s) Visited"
@@ -97,21 +98,16 @@ class DatesVisited(models.Model):
         return self.date_visited.strftime("%A %d. %B %Y")
     
     
-class DateList(models.Model):
-    seller = models.ForeignKey(Seller)
-    dates_visited = models.ForeignKey(DatesVisited)
-    
-    
-class DateListInline(admin.TabularInline)        
-    model = DateList
-    extra = 1
+class DatesVisitedInline(admin.TabularInline):
+    model = DatesVisited    
 
     
 admin.site.disable_action('delete_selected')   
     
 class SellerAdmin(admin.ModelAdmin):
-    date_hierarchy = 'first_created'
-    list_display = ('last_name', 'first_name', 'license_state', 'license_number', 'birthday')
+#    date_hierarchy = 'first_created'
+    list_display = ('__unicode__', 'last_name', 'first_name', 'license_state', 'license_number', 'birthday')
+    list_display_links = ('last_name', 'first_name', 'license_state', 'license_number')
     list_filter = ('license_state',)
     list_per_page = 100
     search_fields = ('first_name', 'last_name', 'license_number', 'birthday')
@@ -121,14 +117,10 @@ class SellerAdmin(admin.ModelAdmin):
 #        ('Dates', {'fields': ['birthday', 'license_expires']}),
 #    ]
     readonly_fields = ('last_name', 'first_name', 'license_state')
-    inlines = (DateListInline,)
+    inlines = [ DatesVisitedInline, ]
 
     
     
-#class DatesVisitedAdmin(admin.ModelAdmin):
-#    date_hierarchy = 'date_visited'
-#    list_filter = ('date_visited',)
-#    list_per_page = 30
     
 #admin.site.register(DatesVisited, DatesVisitedAdmin)    
 admin.site.register(Seller, SellerAdmin)
