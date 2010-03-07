@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib import admin
+import datetime
 
 # Create your models here.
 class Seller(models.Model):
@@ -78,7 +79,7 @@ class Seller(models.Model):
     
     first_created = models.DateField(auto_now_add=True)
     
-    dates_visited = models.ManyToManyField("DatesVisited", related_name="DatesVisited")
+    dates_visited = models.ManyToManyField("Date", through="DatesVisited")
     
     class Meta: 
         ordering = ['last_name']
@@ -87,8 +88,8 @@ class Seller(models.Model):
         return "%s, %s %s" % (self.last_name, self.first_name, self.middle_name)
 
 
-class DatesVisited(models.Model):
-    date_visited = models.DateField(auto_now_add=True, unique=True)
+class Date(models.Model):
+    date_visited = models.DateField()
     
     class Meta: 
         verbose_name = "Date(s) Visited"
@@ -98,11 +99,23 @@ class DatesVisited(models.Model):
         return self.date_visited.strftime("%A %d. %B %Y")
     
     
-class DatesVisitedInline(admin.TabularInline):
-    model = DatesVisited    
+class DateInline(admin.TabularInline):
+    model = Date
+    prepopulated_fields = {'date_visited' : ( datetime.datetime.today, )} 
 
     
-admin.site.disable_action('delete_selected')   
+class DatesVisited(models.Model):
+    seller = models.ForeignKey(Seller)
+    date = models.ForeignKey(Date)
+    
+class DatesVisitedInline(admin.TabularInline):
+    model = DatesVisited
+    extra = 1
+    verbose_name = "Dates Visited"
+    verbose_name_plural = "Dates Visited"
+    
+
+
     
 class SellerAdmin(admin.ModelAdmin):
 #    date_hierarchy = 'first_created'
@@ -117,10 +130,11 @@ class SellerAdmin(admin.ModelAdmin):
 #        ('Dates', {'fields': ['birthday', 'license_expires']}),
 #    ]
     readonly_fields = ('last_name', 'first_name', 'license_state')
-    inlines = [ DatesVisitedInline, ]
+    inlines = (DatesVisitedInline,)
 
     
     
     
+admin.site.disable_action('delete_selected')       
 #admin.site.register(DatesVisited, DatesVisitedAdmin)    
 admin.site.register(Seller, SellerAdmin)
