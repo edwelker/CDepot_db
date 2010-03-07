@@ -78,5 +78,5 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'cdepot.sellerdb',
-    'south',
+#    'south',  don't have time to figure this out right now
 )

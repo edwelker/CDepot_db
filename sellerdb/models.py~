@@ -87,7 +87,7 @@ class Seller(models.Model):
 
 class DatesVisited(models.Model):
     date_visited = models.DateField(auto_now_add=True, unique=True)
-    sellers = models.ManyToManyField(Seller)
+    sellers = models.ManyToManyField(Seller, through='DateList')
     
     class Meta: 
         verbose_name = "Date(s) Visited"
@@ -95,9 +95,16 @@ class DatesVisited(models.Model):
     
     def __unicode__(self):
         return self.date_visited.strftime("%A %d. %B %Y")
-
-class DatesVisitedInline(admin.TabularInline):
-    model = DatesVisited.sellers.through
+    
+    
+class DateList(models.Model):
+    seller = models.ForeignKey(Seller)
+    dates_visited = models.ForeignKey(DatesVisited)
+    
+    
+class DateListInline(admin.TabularInline)        
+    model = DateList
+    extra = 1
 
     
 admin.site.disable_action('delete_selected')   
@@ -114,9 +121,7 @@ class SellerAdmin(admin.ModelAdmin):
 #        ('Dates', {'fields': ['birthday', 'license_expires']}),
 #    ]
     readonly_fields = ('last_name', 'first_name', 'license_state')
-    inlines = [
-        DatesVisitedInline
-    ]
+    inlines = (DateListInline,)
 
     
     
