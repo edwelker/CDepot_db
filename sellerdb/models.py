@@ -98,7 +98,6 @@ class Date(models.Model):
         verbose_name = "Date(s) Visited"
         verbose_name_plural = "Dates Visited"
         ordering = ['date_visited']
-        
     
     def __unicode__(self):
         return self.date_visited.strftime("%A %d. %B %Y")
@@ -117,6 +116,7 @@ class DateInline(admin.TabularInline):
     extra = 1
     max_num = 4
     can_order = True
+#    date_hierarchy = 'date_visited'
 #    prepopulated_fields = {'date_visited' : ( datetime.datetime.today(), )}    
 
 
