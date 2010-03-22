@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib import admin
+from django.forms import models as form_models
 import datetime
 
 # Create your models here.
@@ -55,7 +56,7 @@ class Seller(models.Model):
         (47 ,"Tennessee"),
         (48 ,"Texas"),
         (49 ,"Utah"),
-        (50 ,"Vermont"),
+       (50 ,"Vermont"),
         (51 ,"Virginia"),
         (52 ,"Virgin Islands"),
         (53 ,"Washington"),
@@ -79,10 +80,11 @@ class Seller(models.Model):
     
     first_created = models.DateField(auto_now_add=True)
     
-    dates_visited = models.ManyToManyField("Date", through="DatesVisited")
+    notes = models.TextField(blank=True)
     
     class Meta: 
         ordering = ['last_name']
+#        unique_together = ("first_name", "middle_name", "last_name")
     
     def __unicode__(self):
         return "%s, %s %s" % (self.last_name, self.first_name, self.middle_name)
@@ -90,30 +92,32 @@ class Seller(models.Model):
 
 class Date(models.Model):
     date_visited = models.DateField()
+    person = models.ForeignKey(Seller, null=True)
     
     class Meta: 
         verbose_name = "Date(s) Visited"
         verbose_name_plural = "Dates Visited"
+        ordering = ['date_visited']
+        
     
     def __unicode__(self):
         return self.date_visited.strftime("%A %d. %B %Y")
+ 
+
+class DateInlineFormset(form_models.BaseInlineFormSet):
+    def __init__(self, *args, **kwargs):
+        super(DateInlineFormset, self).__init__(*args, **kwargs)
+        self.can_delete = False
+        self.can_order = True
     
     
 class DateInline(admin.TabularInline):
     model = Date
-#    prepopulated_fields = {'date_visited' : ( datetime.datetime.today, )} 
-
-    
-class DatesVisited(models.Model):
-    seller = models.ForeignKey(Seller)
-    date = models.ForeignKey(Date)
-    
-class DatesVisitedInline(admin.TabularInline):
-    model = DatesVisited
+    formset = DateInlineFormset
     extra = 1
-    verbose_name = "Dates Visited"
-    verbose_name_plural = "Dates Visited"
-    
+    max_num = 4
+    can_order = True
+#    prepopulated_fields = {'date_visited' : ( datetime.datetime.today(), )}    
 
 
     
@@ -130,11 +134,9 @@ class SellerAdmin(admin.ModelAdmin):
 #        ('Dates', {'fields': ['birthday', 'license_expires']}),
 #    ]
     readonly_fields = ('last_name', 'first_name', 'license_state')
-    inlines = (DatesVisitedInline,)
-
-    
+    inlines = (DateInline,)
     
     
 admin.site.disable_action('delete_selected')       
-#admin.site.register(DatesVisited, DatesVisitedAdmin)    
+#admin.site.register(Date, DateAdmin)    
 admin.site.register(Seller, SellerAdmin)
