@@ -119,7 +119,8 @@ class DateInline(admin.TabularInline):
 #    date_hierarchy = 'date_visited'
 #    prepopulated_fields = {'date_visited' : ( datetime.datetime.today(), )}    
 
-
+class DateAdmin(admin.ModelAdmin):
+    readonly_fields = ['date_visited']
     
 class SellerAdmin(admin.ModelAdmin):
 #    date_hierarchy = 'first_created'
@@ -138,5 +139,5 @@ class SellerAdmin(admin.ModelAdmin):
     
     
 admin.site.disable_action('delete_selected')       
-#admin.site.register(Date, DateAdmin)    
+admin.site.register(Date, DateAdmin)    
 admin.site.register(Seller, SellerAdmin)
